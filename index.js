@@ -55,6 +55,17 @@ const mainMenu = {
   },
 };
 
+// Subscription channels menu
+const subscriptionMenu = {
+  reply_markup: {
+    inline_keyboard: [
+      [{ text: '📸 Instagram Kanal', url: 'https://www.instagram.com/khabib__uzz' }],
+      [{ text: '📢 Telegram Kanal', url: 'https://t.me/khabib_pubguz' }],
+      [{ text: '✅ Obuna bo‘ldim', callback_data: 'subscribed' }],
+    ],
+  },
+};
+
 // Back button
 const backButton = {
   reply_markup: {
@@ -70,7 +81,7 @@ bot.on('polling_error', (error) => {
 // Handle /start command
 bot.onText(/\/start/, (msg) => {
   const chatId = msg.chat.id;
-  bot.sendMessage(chatId, '🎉 Xush kelibsiz! Quyidagi xizmatlardan birini tanlang:', mainMenu)
+  bot.sendMessage(chatId, 'Botdan foydalanishdan oldin shu kanallarimizga obuna bo\'ling:\n\n1️⃣ Instagram: https://www.instagram.com/khabib__uzz\n2️⃣ Telegram: https://t.me/khabib_pubguz\n\nObuna bo‘lgandan so‘ng, quyidagi tugmani bosing:', subscriptionMenu)
     .catch(err => console.error('Error sending start message:', err));
 });
 
@@ -82,7 +93,14 @@ bot.on('callback_query', async (callbackQuery) => {
   const messageId = callbackQuery.message.message_id;
 
   try {
-    if (data === 'subscribers') {
+    if (data === 'subscribed') {
+      await bot.editMessageText('🎉 Xush kelibsiz! Quyidagi xizmatlardan birini tanlang:', {
+        chat_id: chatId,
+        message_id: messageId,
+        reply_markup: mainMenu.reply_markup
+      });
+    } 
+    else if (data === 'subscribers') {
       const options = Object.keys(subscriberOptions).map((key) => [{ text: key, callback_data: key }]);
       options.push([{ text: '🔙 Orqaga', callback_data: 'back' }]);
       await bot.editMessageText('📈 Obuna tanlang:', {
@@ -153,7 +171,6 @@ bot.on('callback_query', async (callbackQuery) => {
   } catch (error) {
     console.error('Error handling callback:', error);
     if (error.code === 400 && error.response?.description?.includes('message to edit not found')) {
-      // If message editing fails, send a new message
       if (data === 'back') {
         await bot.sendMessage(chatId, '🏠 Bosh menuga qaytdingiz:', mainMenu);
       }
